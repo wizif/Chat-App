@@ -1,4 +1,7 @@
 {
+  "name": "chat-app-backend",
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
@@ -7,6 +10,7 @@
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "git": "^0.1.5",
