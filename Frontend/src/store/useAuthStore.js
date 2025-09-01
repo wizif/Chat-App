@@ -17,11 +17,15 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
-
       set({ authUser: res.data });
       get().connectSocket();
     } catch (error) {
-      console.log("Error in checkAuth:", error);
+      // Handle auth errors silently - 401 is expected when not logged in
+      if (error.response?.status === 401) {
+        console.log("User not authenticated");
+      } else {
+        console.log("Error in checkAuth:", error.message);
+      }
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -36,7 +40,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Account created successfully");
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Signup failed");
     } finally {
       set({ isSigningUp: false });
     }
@@ -51,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       set({ isLoggingIn: false });
     }
@@ -64,7 +68,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Logged out successfully");
       get().disconnectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Logout failed");
     }
   },
 
@@ -76,7 +80,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Profile updated successfully");
     } catch (error) {
       console.log("error in update profile:", error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Profile update failed");
     } finally {
       set({ isUpdatingProfile: false });
     }
@@ -99,6 +103,7 @@ export const useAuthStore = create((set, get) => ({
       set({ onlineUsers: userIds });
     });
   },
+  
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
   },
