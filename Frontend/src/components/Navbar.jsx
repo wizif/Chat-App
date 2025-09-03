@@ -1,9 +1,20 @@
+// src/components/Navbar.jsx (UPDATED VERSION)
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { useFriendStore } from "../store/useFriendStore";
+import { LogOut, MessageSquare, Settings, User, Users } from "lucide-react";
+import { useEffect } from "react";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
+  const { pendingRequests, getPendingRequests } = useFriendStore();
+
+  // *** Get pending requests count for notification badge ***
+  useEffect(() => {
+    if (authUser) {
+      getPendingRequests();
+    }
+  }, [authUser, getPendingRequests]);
 
   return (
     <header
@@ -22,12 +33,26 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* *** NEW: FRIENDS BUTTON WITH NOTIFICATION BADGE *** */}
+            {authUser && (
+              <Link
+                to={"/friends"}
+                className="btn btn-sm gap-2 transition-colors relative"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Friends</span>
+                {/* *** NOTIFICATION BADGE FOR PENDING REQUESTS *** */}
+                {pendingRequests.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-error text-error-content text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {pendingRequests.length > 9 ? '9+' : pendingRequests.length}
+                  </span>
+                )}
+              </Link>
+            )}
+
             <Link
               to={"/settings"}
-              className={`
-              btn btn-sm gap-2 transition-colors
-              
-              `}
+              className="btn btn-sm gap-2 transition-colors"
             >
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
@@ -35,7 +60,7 @@ const Navbar = () => {
 
             {authUser && (
               <>
-                <Link to={"/profile"} className={`btn btn-sm gap-2`}>
+                <Link to={"/profile"} className="btn btn-sm gap-2">
                   <User className="size-5" />
                   <span className="hidden sm:inline">Profile</span>
                 </Link>
