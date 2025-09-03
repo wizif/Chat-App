@@ -1,3 +1,4 @@
+// src/models/user.model.js (UPDATED VERSION)
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -20,6 +21,17 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // *** NEW: Array of user IDs who are friends with this user ***
+    friends: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
+    // *** NEW: Optional username for easier searching (can be added later) ***
+    username: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null values but ensures uniqueness when set
+    }
   },
   { timestamps: true }
 );

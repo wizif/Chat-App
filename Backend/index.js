@@ -10,6 +10,7 @@ import { connectDB } from "./src/lib/db.js";
 import authRoutes from "./src/routes/auth.route.js";
 import messageRoutes from "./src/routes/message.route.js";
 import { app, server } from "./src/lib/socket.js";
+import friendRoutes from "./src/routes/friend.route.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use(
     credentials: true,
   })
 );
+app.use("/api/friends", friendRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);

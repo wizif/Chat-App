@@ -1,25 +1,39 @@
+// src/controllers/message.controller.js (UPDATED VERSION)
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 
+// *** UPDATED: Only return friends, not all users ***
 export const getUsersForSidebar = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
-    const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
+    
+    // Get current user with populated friends
+    const currentUser = await User.findById(loggedInUserId)
+      .populate('friends', 'fullName email profilePic')
+      .select('friends');
 
-    res.status(200).json(filteredUsers);
+    // Return only friends (no password field needed since we're populating specific fields)
+    res.status(200).json(currentUser.friends || []);
   } catch (error) {
     console.error("Error in getUsersForSidebar: ", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
+// *** UPDATED: Check friendship before allowing to get messages ***
 export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
+
+    // Check if users are friends before allowing message access
+    const currentUser = await User.findById(myId);
+    if (!currentUser.friends.includes(userToChatId)) {
+      return res.status(403).json({ error: "Can only view messages with friends" });
+    }
 
     const messages = await Message.find({
       $or: [
@@ -35,11 +49,18 @@ export const getMessages = async (req, res) => {
   }
 };
 
+// *** UPDATED: Check friendship before allowing to send messages ***
 export const sendMessage = async (req, res) => {
   try {
     const { text, image } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
+
+    // Check if users are friends before allowing message sending
+    const currentUser = await User.findById(senderId);
+    if (!currentUser.friends.includes(receiverId)) {
+      return res.status(403).json({ error: "Can only send messages to friends" });
+    }
 
     let imageUrl;
     if (image) {
