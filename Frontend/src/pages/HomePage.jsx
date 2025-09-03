@@ -18,7 +18,7 @@ const HomePage = () => {
       <button className="btn btn-primary">Test Button</button>
 
             {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
-          </div>
+         </div>
         </div>
       </div>
     </div>
