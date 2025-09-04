@@ -15,7 +15,7 @@ const HomePage = () => {
         <div className="bg-base-100 rounded-lg shadow-cl w-full max-w-6xl h-[calc(100vh-8rem)]">
           <div className="flex h-full rounded-lg overflow-hidden">
             <Sidebar />
-      <button className="btn btn-primary">Test Button</button>
+      {/* <button className="btn btn-primary">Test Button</button> */}
 
             {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
          </div>
