@@ -1,3 +1,4 @@
+// src/components/MessageInput.jsx (ENHANCED VERSION)
 import { useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
@@ -7,7 +8,12 @@ const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const { 
+    sendMessage, 
+    startTyping, 
+    stopTyping, 
+    resetTyping // *** NEW: Reset typing on send ***
+  } = useChatStore();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -28,11 +34,33 @@ const MessageInput = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // *** NEW: Handle typing indicators ***
+  const handleTextChange = (e) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    // Start typing indicator when user starts typing
+    if (newText.length > 0 && text.length === 0) {
+      startTyping();
+    }
+    // Continue typing indicator (resets the timeout)
+    else if (newText.length > 0) {
+      startTyping();
+    }
+    // Stop typing when user clears input
+    else if (newText.length === 0) {
+      stopTyping();
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
 
     try {
+      // *** NEW: Reset typing indicators before sending ***
+      resetTyping();
+      
       await sendMessage({
         text: text.trim(),
         image: imagePreview,
@@ -44,6 +72,13 @@ const MessageInput = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
+    }
+  };
+
+  // *** NEW: Handle input blur (stop typing) ***
+  const handleInputBlur = () => {
+    if (text.trim().length === 0) {
+      stopTyping();
     }
   };
 
@@ -76,7 +111,8 @@ const MessageInput = () => {
             className="w-full input input-bordered rounded-lg input-sm sm:input-md"
             placeholder="Type a message..."
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTextChange} // *** UPDATED: Handle typing indicators ***
+            onBlur={handleInputBlur} // *** NEW: Stop typing on blur ***
           />
           <input
             type="file"
